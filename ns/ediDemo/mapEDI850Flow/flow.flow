@@ -1,5 +1,6 @@
 interface ediDemo
-service mapEDI850Flow
+service mapEDI850Flow (
+)
 properties {
     visible: private;
     reuse: private;
