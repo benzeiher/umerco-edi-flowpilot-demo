@@ -1,6 +1,5 @@
 interface ediDemo
-service mapEDI850Flow (
-)
+service mapEDI850Flow
 properties {
     visible: private;
     reuse: private;
@@ -23,6 +22,9 @@ properties {
         validateInput: false
         validateOutput: false
         input {
+            mapTarget {
+                String delim;
+            }
             copy `ediDocument` -> `inString`;
             set `delim` = "~";
         }
