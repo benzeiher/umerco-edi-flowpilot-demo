@@ -86,7 +86,7 @@
       <value name="modifiable">true</value>
     </record>
   </record>
-  <value name="node_comment">Parses an X12 850 purchase order string into a flat JSON string carrying the ISA sender/receiver/control number and the BEG purchase order number and date.</value>
+  <value name="node_comment"></value>
   <value name="stateless">yes</value>
   <value name="caching">no</value>
   <value name="prefetch">no</value>
