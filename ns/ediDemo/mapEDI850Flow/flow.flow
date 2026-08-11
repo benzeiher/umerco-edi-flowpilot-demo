@@ -43,10 +43,6 @@ properties {
         validateInput: false
         validateOutput: false
         input {
-            mapTarget {
-                String inString;
-                String delim;
-            }
             copy `ediDocument` -> `inString`;
             set `delim` = "~";
         }
@@ -131,24 +127,6 @@ properties {
     INVOKE pub.json:documentToJSONString {
         validateInput: false
         validateOutput: false
-        input {
-            mapTarget {
-                record document {
-                    allowUnspecifiedFields: true;
-                } {
-                    String senderId;
-                    String receiverId;
-                    String controlNumber;
-                    String poNumber;
-                    String poDate;
-                };
-            }
-            copy `senderId` -> `document`/`senderId`;
-            copy `receiverId` -> `document`/`receiverId`;
-            copy `controlNumber` -> `document`/`controlNumber`;
-            copy `poNumber` -> `document`/`poNumber`;
-            copy `poDate` -> `document`/`poDate`;
-        }
         output {
             mapTarget {
                 String jsonOutput;
