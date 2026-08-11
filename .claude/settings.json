@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -rhE \"String ?\\\\[\\\\]|StringList|\\\\[\\\\] ?\\\\`?[a-z]|valueList\" --include='*.flow' .)",
+      "Bash(python3 -c ' *)",
+      "Bash(ls -R /Users/benjaminzeiher/projects/EDIFlowPilotDemo/generated 2>/dev/null | head -30; echo \"---parent---\"; ls /Users/benjaminzeiher/projects/EDIFlowPilotDemo)",
+      "Read(//Users/benjaminzeiher/projects/EDIFlowPilotDemo/**)"
+    ]
+  }
+}
