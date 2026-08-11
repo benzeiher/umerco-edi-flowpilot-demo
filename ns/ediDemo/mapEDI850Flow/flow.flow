@@ -1,40 +1,19 @@
 interface ediDemo
-service mapEDI850Flow (
-    input {
-        String ediDocument;
-    }
-    output {
-        String jsonOutput;
-    }
-)
+service mapEDI850Flow
 properties {
-    comment: "Parses an X12 850 purchase order string into a flat JSON string carrying the ISA sender/receiver/control number and the BEG purchase order number and date.";
-    favorite: false;
-    deprecated: false;
-    visible: public;
+    visible: private;
     reuse: private;
     stateless: true;
     cacheResults: false;
     cacheExpire: 15;
     prefetch: false;
     prefetchActivation: 1;
-    pipelineDebug: None;
     allowedHttpMethods: [TRACE, HEAD, DELETE, POST, GET, OPTIONS, PUT, PATCH];
     maxRetryAttempts: 0;
     retryInterval: 0;
     enableAuditing: never;
     logOn: Error only;
     includePipeline: never;
-    circuitBreakerEnabled: false;
-    failureEvent: Exception only;
-    timeoutPeriod: 60;
-    cancelThreadOnTimeout: false;
-    failureThreshold: 5;
-    failurePeriod: 60;
-    circuitOpenAction: Throw exception;
-    circuitResetPeriod: 300;
-    concurrencyEnabled: false;
-    maxConcurrentRequests: 20;
     validateInput: false;
     validateOutput: false;
 }
@@ -43,10 +22,6 @@ properties {
         validateInput: false
         validateOutput: false
         input {
-            mapTarget {
-                String inString;
-                String delim;
-            }
             copy `ediDocument` -> `inString`;
             set `delim` = "~";
         }
@@ -61,17 +36,11 @@ properties {
         inputArray: "/segmentList"
         maxThreads: "1"
         parallelErrorHandling: "reportError"
-        MAP {
-            mapTarget {
-                String currentSegment;
-            }
-            set (variable) `currentSegment` = "%segmentList[$iterationCount]%";
-        }
         INVOKE pub.string:trim {
             validateInput: false
             validateOutput: false
             input {
-                copy `currentSegment` -> `inString`;
+                copy `segmentList` -> `inString`;
             }
             output {
                 mapTarget {
