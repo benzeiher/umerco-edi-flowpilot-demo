@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<FLOW VERSION="3.2" CLEANUP="true">
+
+  <!-- nodes -->
+
+<BRANCH TIMEOUT="" SWITCH="/segmentId">
+  <COMMENT></COMMENT>
+
+  <!-- nodes -->
+
+<INVOKE NAME="BEG" TIMEOUT="" SERVICE="ediDemo:Throwaway" VALIDATE-IN="$none" VALIDATE-OUT="$none">
+  <COMMENT></COMMENT>
+</INVOKE>
+
+<INVOKE NAME="$default" TIMEOUT="" SERVICE="ediDemo:Throwaway" VALIDATE-IN="$none" VALIDATE-OUT="$none">
+  <COMMENT></COMMENT>
+</INVOKE>
+</BRANCH>
+
+<SEQUENCE TIMEOUT="" EXIT-ON="FAILURE">
+  <COMMENT></COMMENT>
+
+  <!-- nodes -->
+
+<INVOKE TIMEOUT="" SERVICE="ediDemo:Throwaway" VALIDATE-IN="$none" VALIDATE-OUT="$none">
+  <COMMENT></COMMENT>
+</INVOKE>
+
+<SEQUENCE TIMEOUT="" EXIT-ON="FAILURE" CONDITION="isValid=true" FORM="IF">
+  <COMMENT></COMMENT>
+
+  <!-- nodes -->
+
+<INVOKE TIMEOUT="" SERVICE="ediDemo:Throwaway" VALIDATE-IN="$none" VALIDATE-OUT="$none">
+  <COMMENT></COMMENT>
+</INVOKE>
+
+<LOOP TIMEOUT="" IN-ARRAY="/segments"  MAX-THREADS="1"  PARALLEL-ERROR-HANDLING="reportError">
+  <COMMENT></COMMENT>
+
+  <!-- nodes -->
+
+<INVOKE TIMEOUT="" SERVICE="ediDemo:Throwaway" VALIDATE-IN="$none" VALIDATE-OUT="$none">
+  <COMMENT></COMMENT>
+</INVOKE>
+</LOOP>
+</SEQUENCE>
+</SEQUENCE>
+</FLOW>
