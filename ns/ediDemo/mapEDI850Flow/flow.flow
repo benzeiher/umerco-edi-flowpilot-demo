@@ -1,113 +1,194 @@
 interface ediDemo
-service mapEDI850Flow
+service mapEDI850Flow (
+    input {
+        String ediDocument;
+    }
+    output {
+        String jsonOutput;
+    }
+)
 properties {
-    visible: private;
+    comment: "Parses an X12 850 purchase order string into a flat JSON string carrying the ISA sender/receiver/control number and the BEG purchase order number and date.";
+    favorite: false;
+    deprecated: false;
+    visible: public;
     reuse: private;
     stateless: true;
     cacheResults: false;
     cacheExpire: 15;
     prefetch: false;
     prefetchActivation: 1;
+    pipelineDebug: None;
     allowedHttpMethods: [TRACE, HEAD, DELETE, POST, GET, OPTIONS, PUT, PATCH];
     maxRetryAttempts: 0;
     retryInterval: 0;
     enableAuditing: never;
     logOn: Error only;
     includePipeline: never;
+    circuitBreakerEnabled: false;
+    failureEvent: Exception only;
+    timeoutPeriod: 60;
+    cancelThreadOnTimeout: false;
+    failureThreshold: 5;
+    failurePeriod: 60;
+    circuitOpenAction: Throw exception;
+    circuitResetPeriod: 300;
+    concurrencyEnabled: false;
+    maxConcurrentRequests: 20;
     validateInput: false;
     validateOutput: false;
 }
 {
-    INVOKE pub.string:tokenize {
-        validateInput: false
-        validateOutput: false
-        input {
-            mapTarget {
-                String delim;
+    SEQUENCE {
+        INVOKE pub.flow:debugLog {
+            validateInput: false
+            validateOutput: false
+            input {
+                mapTarget {
+                    String message;
+                    String level;
+                }
+                set `message` = "[mapEDI850Flow] started";
+                set `level` = "DEBUG";
             }
-            copy `ediDocument` -> `inString`;
-            set `delim` = "~";
         }
-        output {
-            mapTarget {
-                String[] segmentList;
-            }
-            copy `valueList` -> `segmentList`;
-        }
-    }
-    LOOP {
-        inputArray: "/segmentList"
-        maxThreads: "1"
-        parallelErrorHandling: "reportError"
         INVOKE pub.string:trim {
             validateInput: false
             validateOutput: false
             input {
-                copy `segmentList` -> `inString`;
+                mapTarget {
+                    String inString;
+                }
+                copy `ediDocument` -> `inString`;
             }
             output {
                 mapTarget {
-                    String segment;
+                    String ediText;
                 }
-                copy `value` -> `segment`;
+                copy `value` -> `ediText`;
+                drop `value`;
+                drop `inString`;
             }
         }
         INVOKE pub.string:tokenize {
             validateInput: false
             validateOutput: false
             input {
-                copy `segment` -> `inString`;
-                set `delim` = "*";
+                mapTarget {
+                    String inString;
+                    String delim;
+                }
+                copy `ediText` -> `inString`;
+                set `delim` = "~";
             }
             output {
                 mapTarget {
-                    String[] elementList;
+                    Object segmentList;
                 }
-                copy `valueList` -> `elementList`;
+                copy `valueList` -> `segmentList`;
+                drop `valueList`;
+                drop `inString`;
+                drop `delim`;
+                drop `ediText`;
             }
         }
-        MAP {
-            mapTarget {
-                String segmentId;
-            }
-            set (variable) `segmentId` = "%elementList[0]%";
-        }
-        BRANCH {
-            switch: "/segmentId"
-            SEQUENCE {
-                label: "ISA"
-                MAP {
+        LOOP {
+            inputArray: "/segmentList"
+            maxThreads: "1"
+            parallelErrorHandling: "reportError"
+            INVOKE pub.string:trim {
+                validateInput: false
+                validateOutput: false
+                input {
                     mapTarget {
-                        String senderId;
-                        String receiverId;
-                        String controlNumber;
+                        String inString;
                     }
-                    set (variable) `senderId` = "%elementList[6]%";
-                    set (variable) `receiverId` = "%elementList[8]%";
-                    set (variable) `controlNumber` = "%elementList[13]%";
+                    copy `segmentList` -> `inString`;
+                }
+                output {
+                    mapTarget {
+                        String segment;
+                    }
+                    copy `value` -> `segment`;
+                    drop `value`;
+                    drop `inString`;
                 }
             }
-            SEQUENCE {
-                label: "BEG"
-                MAP {
+            INVOKE pub.string:substring {
+                validateInput: false
+                validateOutput: false
+                input {
                     mapTarget {
-                        String poNumber;
-                        String poDate;
+                        String inString;
+                        String beginIndex;
+                        String endIndex;
                     }
-                    set (variable) `poNumber` = "%elementList[3]%";
-                    set (variable) `poDate` = "%elementList[4]%";
+                    copy `segment` -> `inString`;
+                    set `beginIndex` = "0";
+                    set `endIndex` = "3";
+                }
+                output {
+                    mapTarget {
+                        String segmentId;
+                    }
+                    copy `value` -> `segmentId`;
+                    drop `value`;
+                    drop `inString`;
+                    drop `beginIndex`;
+                    drop `endIndex`;
+                }
+            }
+            BRANCH {
+                switch: "/segmentId"
+                INVOKE ediDemo:captureIsaHeader {
+                    label: "ISA"
+                    validateInput: false
+                    validateOutput: false
+                    input {
+                        mapTarget {
+                            String isaSegment;
+                        }
+                        copy `segment` -> `isaSegment`;
+                    }
                 }
             }
         }
-    }
-    INVOKE pub.json:documentToJSONString {
-        validateInput: false
-        validateOutput: false
-        output {
-            mapTarget {
-                String jsonOutput;
+        INVOKE pub.json:documentToJSONString {
+            validateInput: false
+            validateOutput: false
+            input {
+                mapTarget {
+                    String prettyPrint;
+                }
+                set `prettyPrint` = "false";
             }
-            copy `jsonString` -> `jsonOutput`;
+            output {
+                mapTarget {
+                    String jsonOutput;
+                }
+                copy `jsonString` -> `jsonOutput`;
+                drop `jsonString`;
+                drop `document`;
+                drop `prettyPrint`;
+                drop `segmentList`;
+                drop `segment`;
+                drop `segmentId`;
+                drop `senderId`;
+                drop `receiverId`;
+                drop `controlNumber`;
+            }
+        }
+        INVOKE pub.flow:debugLog {
+            validateInput: false
+            validateOutput: false
+            input {
+                mapTarget {
+                    String message;
+                    String level;
+                }
+                set `message` = "[mapEDI850Flow] finished";
+                set `level` = "DEBUG";
+            }
         }
     }
 }
