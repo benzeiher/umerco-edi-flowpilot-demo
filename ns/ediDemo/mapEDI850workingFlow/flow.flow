@@ -13,7 +13,15 @@ properties {
     deprecated: false;
     visible: public;
     reuse: private;
+    stateless: true;
+    cacheResults: false;
+    cacheExpire: 15;
+    prefetch: false;
+    prefetchActivation: 1;
     pipelineDebug: None;
+    allowedHttpMethods: [TRACE, HEAD, DELETE, POST, GET, OPTIONS, PUT, PATCH];
+    maxRetryAttempts: 0;
+    retryInterval: 0;
     enableAuditing: never;
     logOn: Error only;
     includePipeline: never;
@@ -35,6 +43,9 @@ properties {
         validateInput: false
         validateOutput: false
         input {
+            mapTarget {
+                String delim;
+            }
             copy `ediDocument` -> `inString`;
             set `delim` = "~";
         }
@@ -119,11 +130,6 @@ properties {
         }
     }
     MAP {
-        copy `senderId` -> `purchaseOrder`/`senderId`;
-        copy `receiverId` -> `purchaseOrder`/`receiverId`;
-        copy `controlNumber` -> `purchaseOrder`/`controlNumber`;
-        copy `poNumber` -> `purchaseOrder`/`poNumber`;
-        copy `poDate` -> `purchaseOrder`/`poDate`;
     }
     INVOKE pub.json:documentToJSONString {
         validateInput: false
