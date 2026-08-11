@@ -1,10 +1,17 @@
 interface ediDemo
 service mapEDI850Flow (
+    input {
+        String ediDocument;
+    }
+    output {
+        String jsonOutput;
+    }
 )
 properties {
+    comment: "Parses an X12 850 purchase order string into a flat JSON string carrying the ISA sender/receiver/control number and the BEG purchase order number and date.";
     favorite: false;
     deprecated: false;
-    visible: private;
+    visible: public;
     reuse: private;
     stateless: true;
     cacheResults: false;
@@ -111,14 +118,51 @@ properties {
             }
         }
     }
+    MAP {
+        mapSource {
+            String senderId;
+            String receiverId;
+            String controlNumber;
+            String poNumber;
+            String poDate;
+        }
+        mapTarget {
+            record purchaseOrder {
+                String senderId;
+                String receiverId;
+                String controlNumber;
+                String poNumber;
+                String poDate;
+            };
+        }
+        copy senderId -> purchaseOrder/senderId;
+        copy receiverId -> purchaseOrder/receiverId;
+        copy controlNumber -> purchaseOrder/controlNumber;
+        copy poNumber -> purchaseOrder/poNumber;
+        copy poDate -> purchaseOrder/poDate;
+    }
     INVOKE pub.json:documentToJSONString {
         validateInput: false
         validateOutput: false
+        input {
+            mapSource {
+                record purchaseOrder {
+                };
+            }
+            mapTarget {
+                record `document` {
+                };
+            }
+            copy purchaseOrder -> `document`;
+        }
         output {
+            mapSource {
+                String jsonString;
+            }
             mapTarget {
                 String jsonOutput;
             }
-            copy `jsonString` -> `jsonOutput`;
+            copy jsonString -> jsonOutput;
         }
     }
 }
