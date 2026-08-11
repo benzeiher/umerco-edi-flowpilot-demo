@@ -15,17 +15,6 @@
       <value name="form_qualified">false</value>
       <value name="is_global">false</value>
       <array name="rec_fields" type="record" depth="1">
-        <record javaclass="com.wm.util.Values">
-          <value name="node_type">record</value>
-          <value name="node_subtype">unknown</value>
-          <value name="is_public">false</value>
-          <value name="field_name">ediDocument</value>
-          <value name="field_type">string</value>
-          <value name="field_dim">0</value>
-          <value name="nillable">true</value>
-          <value name="form_qualified">false</value>
-          <value name="is_global">false</value>
-        </record>
       </array>
       <value name="rec_closed">false</value>
       <value name="modifiable">true</value>
@@ -40,23 +29,11 @@
       <value name="form_qualified">false</value>
       <value name="is_global">false</value>
       <array name="rec_fields" type="record" depth="1">
-        <record javaclass="com.wm.util.Values">
-          <value name="node_type">record</value>
-          <value name="node_subtype">unknown</value>
-          <value name="is_public">false</value>
-          <value name="field_name">jsonOutput</value>
-          <value name="field_type">string</value>
-          <value name="field_dim">0</value>
-          <value name="nillable">true</value>
-          <value name="form_qualified">false</value>
-          <value name="is_global">false</value>
-        </record>
       </array>
       <value name="rec_closed">false</value>
       <value name="modifiable">true</value>
     </record>
   </record>
-  <value name="node_comment">Parses an X12 850 purchase order string into a flat JSON string carrying the ISA sender/receiver/control number and the BEG purchase order number and date.</value>
   <value name="stateless">yes</value>
   <value name="caching">no</value>
   <value name="prefetch">no</value>
@@ -110,5 +87,5 @@
   <value name="is_public">false</value>
   <value name="favorite">no</value>
   <value name="deprecated">no</value>
-  <value name="is_visible">True</value>
+  <value name="is_visible">False</value>
 </Values>
