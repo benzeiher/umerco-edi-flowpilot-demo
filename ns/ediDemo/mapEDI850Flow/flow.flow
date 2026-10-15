@@ -1,40 +1,19 @@
 interface ediDemo
-service mapEDI850Flow (
-    input {
-        String ediDocument;
-    }
-    output {
-        String jsonOutput;
-    }
-)
+service mapEDI850Flow
 properties {
-    comment: "Parses an X12 850 purchase order string into a flat JSON string carrying the ISA sender/receiver/control number and the BEG purchase order number and date.";
-    favorite: false;
-    deprecated: false;
-    visible: public;
+    visible: private;
     reuse: private;
     stateless: true;
     cacheResults: false;
     cacheExpire: 15;
     prefetch: false;
     prefetchActivation: 1;
-    pipelineDebug: None;
     allowedHttpMethods: [TRACE, HEAD, DELETE, POST, GET, OPTIONS, PUT, PATCH];
     maxRetryAttempts: 0;
     retryInterval: 0;
     enableAuditing: never;
     logOn: Error only;
     includePipeline: never;
-    circuitBreakerEnabled: false;
-    failureEvent: Exception only;
-    timeoutPeriod: 60;
-    cancelThreadOnTimeout: false;
-    failureThreshold: 5;
-    failurePeriod: 60;
-    circuitOpenAction: Throw exception;
-    circuitResetPeriod: 300;
-    concurrencyEnabled: false;
-    maxConcurrentRequests: 20;
     validateInput: false;
     validateOutput: false;
 }
@@ -43,6 +22,9 @@ properties {
         validateInput: false
         validateOutput: false
         input {
+            mapTarget {
+                String delim;
+            }
             copy `ediDocument` -> `inString`;
             set `delim` = "~";
         }
@@ -54,6 +36,7 @@ properties {
         }
     }
     LOOP {
+        comment: "One iteration per X12 segment. Segments arrive newline-separated, so each is trimmed before its elements are split on *."
         inputArray: "/segmentList"
         maxThreads: "1"
         parallelErrorHandling: "reportError"
@@ -71,16 +54,16 @@ properties {
             }
             output {
                 mapTarget {
-                    String segment;
+                    String trimmedSegment;
                 }
-                copy `value` -> `segment`;
+                copy `value` -> `trimmedSegment`;
             }
         }
         INVOKE pub.string:tokenize {
             validateInput: false
             validateOutput: false
             input {
-                copy `segment` -> `inString`;
+                copy `trimmedSegment` -> `inString`;
                 set `delim` = "*";
             }
             output {
@@ -97,6 +80,7 @@ properties {
             set (variable) `segmentId` = "%elementList[0]%";
         }
         BRANCH {
+            comment: "Segment dispatch on the X12 segment id. ISA is the interchange envelope, BEG is the beginning-of-purchase-order segment. Every other segment is ignored."
             switch: "/segmentId"
             SEQUENCE {
                 label: "ISA"
@@ -124,21 +108,10 @@ properties {
             }
         }
     }
-    INVOKE pub.json:documentToJSONString {
-        validateInput: false
-        validateOutput: false
-        input {
-            copy `senderId` -> `document`/`senderId`;
-            copy `receiverId` -> `document`/`receiverId`;
-            copy `controlNumber` -> `document`/`controlNumber`;
-            copy `poNumber` -> `document`/`poNumber`;
-            copy `poDate` -> `document`/`poDate`;
+    MAP {
+        mapTarget {
+            String jsonOutput;
         }
-        output {
-            mapTarget {
-                String jsonOutput;
-            }
-            copy `jsonString` -> `jsonOutput`;
-        }
+        set (variable) `jsonOutput` = {`senderId`:"%senderId%",`receiverId`:"%receiverId%",`controlNumber`:"%controlNumber%",`poNumber`:"%poNumber%",`poDate`:"%poDate%"};
     }
 }
